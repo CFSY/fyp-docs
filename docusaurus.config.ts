@@ -30,9 +30,11 @@ const config: Config = {
     locales: ['en'],
   },
 
+  themes: ['docusaurus-live-brython'],
+
   presets: [
     [
-      'classic',
+      '@docusaurus/preset-classic',
       {
         docs: {
           sidebarPath: './sidebars.ts',
@@ -48,7 +50,7 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'Python Metaprogramming',
+      title: 'Exploring Python Metaprogramming',
       logo: {
         alt: 'My Site Logo',
         src: 'https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/community/logos/python-logo-only.png',
@@ -61,7 +63,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/CFSY/fyp-python-metaprogramming',
           label: 'GitHub',
           position: 'right',
         },

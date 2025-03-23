@@ -1,0 +1,8 @@
+{
+  "label": "Task Runner Demo",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "A simple task execution system powered by Python metaprogramming techniques"
+  }
+}
