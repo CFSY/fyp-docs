@@ -1,0 +1,8 @@
+{
+  "label": "Metaprogramming API",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "The Metaprogramming API leverages Python's advanced features like decorators, metaclasses, and AST analysis to provide a more concise and declarative interface. This API reduces boilerplate code and makes applications more readable while maintaining the same functionality."
+  }
+}

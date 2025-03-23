@@ -1,0 +1,8 @@
+{
+  "label": "Classic API",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "The Classic API follows traditional object-oriented patterns with explicit class inheritance and method implementations. It provides a familiar interface for developers used to working with standard Python libraries."
+  }
+}
