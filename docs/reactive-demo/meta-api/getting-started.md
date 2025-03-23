@@ -22,7 +22,7 @@ Key components include:
 
 :::tip
 
-You can run this example locally. It is available under the `examples/basic` directory.
+You can run this example locally. It is available under the [`examples/basic`](https://github.com/CFSY/meta-reactive) directory.
 
 :::
 

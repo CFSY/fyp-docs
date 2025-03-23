@@ -8,7 +8,7 @@ The reactive framework provides two API styles that offer the same functionality
 
 :::tip
 
-You can run this example locally. It is available under the `examples/temp_monitor` directory.
+You can run this example locally. It is available under the [`examples/temp_monitor`](https://github.com/CFSY/meta-reactive) directory.
 
 :::
 
