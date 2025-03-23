@@ -30,7 +30,11 @@ const config: Config = {
     locales: ['en'],
   },
 
-  themes: ['docusaurus-live-brython'],
+  themes: ['docusaurus-live-brython', '@docusaurus/theme-mermaid'],
+
+  markdown: {
+    mermaid: true,
+  },
 
   presets: [
     [
