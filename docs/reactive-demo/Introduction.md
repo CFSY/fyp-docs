@@ -53,6 +53,16 @@ The compute graph:
 
 Resources expose collections to external clients, providing a way to create, access, and subscribe to reactive data sources.
 
+```mermaid
+sequenceDiagram
+    Client->>Service: GET /v1/streams/{instance_id}
+    Service->>ResourceManager: subscribe(instance_id, queue)
+    ResourceManager->>Client: Send initial data
+    loop When data changes
+        ResourceManager->>Client: Send update
+    end
+```
+
 Key features of resources:
 - Resources are parameterized by a Pydantic model
 - Each resource instantiation creates a configured collection
