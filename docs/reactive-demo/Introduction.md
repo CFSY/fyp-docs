@@ -54,13 +54,19 @@ The compute graph:
 Resources expose collections to external clients, providing a way to create, access, and subscribe to reactive data sources.
 
 ```mermaid
-sequenceDiagram
-    Client->>Service: GET /v1/streams/{instance_id}
-    Service->>ResourceManager: subscribe(instance_id, queue)
-    ResourceManager->>Client: Send initial data
-    loop When data changes
-        ResourceManager->>Client: Send update
+flowchart LR
+    direction TB
+    subgraph Resource["Resource"]
+        Collection[("Collection")]
     end
+    
+    Client["Client"]
+    
+    Resource -->|"SSE Connection"| Client
+    
+    class Resource wrapper
+    class Collection inner
+    class Client client
 ```
 
 Key features of resources:
