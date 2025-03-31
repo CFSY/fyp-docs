@@ -1,11 +1,9 @@
 ---
 sidebar_position: 1
 ---
-
 # Getting Started
 
 The Metaprogramming API provides a more concise and declarative approach to creating reactive applications using Python's metaprogramming features. This guide will walk you through the basics of using the Metaprogramming API.
-
 
 ## Basic Concepts
 
@@ -22,7 +20,7 @@ Key components include:
 
 :::tip
 
-You can run this example locally. It is available under the [`examples/basic`](https://github.com/CFSY/meta-reactive) directory.
+You can run this example locally. It is available under the [`examples/basic`](https://github.com/CFSY/meta-reactive/tree/main/examples/basic) directory.
 
 :::
 
@@ -34,7 +32,7 @@ flowchart LR
 ```
 
 Let's create a simple application. In this example, we have a simulated sensor that generates a value every second.
-The sensor value is kept in the `raw_data` collection. 
+The sensor value is kept in the `raw_data` collection.
 
 We then define a mapper `MultiValueMapper` that multiplies the sensor value by a multiple and returns a formatted message.
 
@@ -103,9 +101,7 @@ if __name__ == "__main__":
 ### Differences
 
 1. **Mapper**: Instead of creating a class as in the classic API, we use the `@one_to_one` decorator to create a mapper function that transforms each data point by applying a multiplier.
-
 2. **Resource**: We use the `@resource` decorator to define our processor resource. The parameters of the function become the parameters of the resource.
-
 
 ## Connecting a Client
 

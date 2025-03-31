@@ -6,6 +6,22 @@ sidebar_position: 1
 
 The Reactive Backend Framework is a Python-based system for building reactive applications where data and computation outputs can be efficiently streamed to clients in real-time. This framework leverages reactive programming principles to create responsive, data-driven applications with minimal boilerplate code.
 
+:::tip
+The source code is available [here on github](https://github.com/CFSY/meta-reactive).
+:::
+
+
+## Motivation
+Following the initial exploration of metaprogramming techniques in the first half of the project, the next logical step was to apply the concepts in a more complex environment. To this end, the "Reactive Framework" was developed during the second half of the project. This framework serves a dual purpose:
+
+1.  **Embodying Core Concepts for Future Work:** While not a full-fledged stream processing engine, the reactive framework intentionally incorporates core concepts relevant to such systems. Features like `Collections` representing data sources, `Mappers` defining transformation pipelines, a `ComputeGraph` managing dependencies and propagation of changes, and `Resources` exposing data streams via Server-Sent Events (SSE) provide a tangible link to the broader goal of building distributed streaming applications. It acts as a practical testbed for API design philosophies applicable to more complex streaming scenarios.
+
+2.  **Providing a Platform for Metaprogramming Comparison:** The primary motivation was to create a concrete example demonstrating the practical benefits and tradeoffs of applying metaprogramming to API design. To achieve this, the framework was intentionally designed with **two distinct APIs** offering identical core functionality:
+    -   A **Classic API**, adhering to traditional Python object-oriented principles.
+    -   A **Metaprogramming API**, leveraging decorators and other metaprogramming techniques for a more concise and declarative developer experience.
+
+  This dual-API approach allows for a direct, side-by-side comparison, highlighting how metaprogramming can simplify complex interactions and reduce boilerplate.
+
 ## Core Concepts
 
 The framework is built around several key concepts that work together to create an efficient reactive computation engine:

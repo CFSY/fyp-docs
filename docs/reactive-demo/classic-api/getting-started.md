@@ -1,11 +1,9 @@
 ---
 sidebar_position: 1
 ---
-
 # Getting Started
 
 The Classic API provides a traditional, object-oriented approach to creating reactive applications. This guide will walk you through the basics of using the Classic API.
-
 
 ## Basic Concepts
 
@@ -20,7 +18,7 @@ The Classic API is built around several key classes:
 
 :::tip
 
-You can run this example locally. It is available under the [`examples/basic`](https://github.com/CFSY/meta-reactive) directory.
+You can run this example locally. It is available under the [`examples/basic`](https://github.com/CFSY/meta-reactive/tree/main/examples/basic) directory.
 
 :::
 
@@ -32,7 +30,7 @@ flowchart LR
 ```
 
 Let's create a simple application. In this example, we have a simulated sensor that generates a value every second.
-The sensor value is kept in the `raw_data` collection. 
+The sensor value is kept in the `raw_data` collection.
 
 We then define a mapper `MultiValueMapper` that multiplies the sensor value by a multiple and returns a formatted message.
 

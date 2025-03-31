@@ -8,7 +8,7 @@ The reactive framework provides two API styles that offer the same functionality
 
 :::tip
 
-You can run this example locally. It is available under the [`examples/temp_monitor`](https://github.com/CFSY/meta-reactive) directory.
+You can run this example locally. It is available under the [`examples/temp_monitor`](https://github.com/CFSY/meta-reactive/tree/main/examples/temp_monitor) directory.
 
 :::
 
@@ -54,16 +54,58 @@ graph TD
 5. **Alerts Collection**: Contains generated alerts for each sensor.
 6. **Temperature Monitor Resource**: Exposes the alerts to clients via the service.
 
+
+
 ### Classic VS Metaprogramming API
 
-1. **Mappers**:
-    - Classic
-    ```python
-    # Define mappers
-    class AverageTemperatureMapper(ManyToOneMapper[str, SensorReading, Tuple[float, str]]):
-        """Computes average temperature for each sensor from its readings"""
+The primary advantage of the Metaprogramming API lies in its ability to reduce boilerplate and provide a more declarative syntax, achieving the same functionality as the Classic API with significantly less code. Let's compare key aspects side-by-side, using examples derived from the Temperature Monitor.
 
-        def map_values(self, readings: list[SensorReading]) -> Tuple[float, str]:
+#### 1. **Mappers**:
+    - **Classic:** Requires defining a class inheriting from a base mapper type.
+        ```python
+        # Define mappers
+        class AverageTemperatureMapper(ManyToOneMapper[str, SensorReading, Tuple[float, str]]):
+            """Computes average temperature for each sensor from its readings"""
+
+            def map_values(self, readings: list[SensorReading]) -> Tuple[float, str]:
+                if not readings:
+                    return 0.0, ""
+                avg_temp = sum(r.temperature for r in readings) / len(readings)
+                # Return both temperature and location
+                return avg_temp, readings[0].location
+
+
+        class EnhancedAlertMapper(OneToOneMapper[str, Tuple[float, str], Dict[str, str]]):
+            """
+            Generates enhanced alerts by comparing current temperatures
+            with reference data for each location
+            """
+
+            def __init__(
+                self, location_references: ComputedCollection, global_threshold: float
+            ):
+                self.location_references = location_references
+                self.global_threshold = global_threshold
+
+            def map_value(self, value: Tuple[float, str]) -> Dict[str, str]:
+                avg_temp, location = value
+
+                # Get reference data for this location
+                location_info = self.location_references.get(location)
+
+                # Use common evaluation logic
+                return evaluate_temperature_alert(
+                    avg_temp, location, location_info, self.global_threshold
+                )
+        ```
+
+    - **Metaprogramming:** Uses a simple decorator (`@many_to_one`) on a standard function.
+        ```python
+        # Define mappers using decorators
+        @many_to_one
+        def average_temperature(readings: List[SensorReading]) -> Tuple[float, str]:
+            """Computes average temperature for each sensor from its readings"""
+
             if not readings:
                 return 0.0, ""
             avg_temp = sum(r.temperature for r in readings) / len(readings)
@@ -71,138 +113,94 @@ graph TD
             return avg_temp, readings[0].location
 
 
-    class EnhancedAlertMapper(OneToOneMapper[str, Tuple[float, str], Dict[str, str]]):
-        """
-        Generates enhanced alerts by comparing current temperatures
-        with reference data for each location
-        """
-
-        def __init__(
-            self, location_references: ComputedCollection, global_threshold: float
-        ):
-            self.location_references = location_references
-            self.global_threshold = global_threshold
-
-        def map_value(self, value: Tuple[float, str]) -> Dict[str, str]:
+        @one_to_one
+        def enhanced_alert(value: Tuple[float, str], global_threshold: float) -> Dict[str, str]:
+            """
+            Generates enhanced alerts by comparing current temperatures
+            with reference data for each location
+            """
             avg_temp, location = value
 
             # Get reference data for this location
-            location_info = self.location_references.get(location)
+            location_info = location_ref_collection.get(location)
 
             # Use common evaluation logic
             return evaluate_temperature_alert(
-                avg_temp, location, location_info, self.global_threshold
+                avg_temp, location, location_info, global_threshold
             )
-    ```
+        ```
 
-    - Metaprogramming
-    ```python
-    # Define mappers using decorators
-    @many_to_one
-    def average_temperature(readings: List[SensorReading]) -> Tuple[float, str]:
-        """Computes average temperature for each sensor from its readings"""
+    The Meta API eliminates class definition boilerplate, focusing purely on the transformation logic. Type hints remain for clarity and potential future tooling.
 
-        if not readings:
-            return 0.0, ""
-        avg_temp = sum(r.temperature for r in readings) / len(readings)
-        # Return both temperature and location
-        return avg_temp, readings[0].location
+#### 2. **Resource Definition with Parameters**:
+    - **Classic:** Requires a `ResourceParams` subclass and a `Resource` subclass, with explicit parameter passing.
+        ```python
+        # Define resource
+        class MonitorParams(ResourceParams):
+            threshold: float  # Global alert threshold in Celsius
 
 
-    @one_to_one
-    def enhanced_alert(value: Tuple[float, str], global_threshold: float) -> Dict[str, str]:
-        """
-        Generates enhanced alerts by comparing current temperatures
-        with reference data for each location
-        """
-        avg_temp, location = value
+        # Resource Implementation
+        class TemperatureMonitorResource(Resource[str, dict]):
+            def __init__(self, readings_collection, location_ref_collection, compute_graph):
+                super().__init__(MonitorParams, compute_graph)
+                self.readings = readings_collection
+                self.location_references = location_ref_collection
 
-        # Get reference data for this location
-        location_info = location_ref_collection.get(location)
+            def setup_resource_collection(self, params: MonitorParams):
+                # Compute average temperatures
+                averages = self.readings.map(AverageTemperatureMapper)
 
-        # Use common evaluation logic
-        return evaluate_temperature_alert(
-            avg_temp, location, location_info, global_threshold
-        )
-    ```
+                # Generate enhanced alerts using both averages and location references
+                alerts = averages.map(
+                    EnhancedAlertMapper,
+                    self.location_references,  # Pass the location references collection
+                    params.threshold,  # Pass the global threshold
+                )
 
-2. **Resource Definition with Parameters**:
-    - Classic
-    ```python
-    # Define resource
-    class MonitorParams(ResourceParams):
-        threshold: float  # Global alert threshold in Celsius
+                return alerts
+        ```
 
-
-    # Resource Implementation
-    class TemperatureMonitorResource(Resource[str, dict]):
-        def __init__(self, readings_collection, location_ref_collection, compute_graph):
-            super().__init__(MonitorParams, compute_graph)
-            self.readings = readings_collection
-            self.location_references = location_ref_collection
-
-        def setup_resource_collection(self, params: MonitorParams):
+    - **Metaprogramming:** Uses the `@resource` decorator. Function parameters *become* resource parameters, automatically generating a Pydantic model internally. Dependencies are often detected automatically.
+        ```python
+        # Define resource using decorator
+        @resource
+        def temperature_monitor(threshold: float):
             # Compute average temperatures
-            averages = self.readings.map(AverageTemperatureMapper)
+            averages = map_collection(readings_collection, average_temperature)
 
             # Generate enhanced alerts using both averages and location references
-            alerts = averages.map(
-                EnhancedAlertMapper,
-                self.location_references,  # Pass the location references collection
-                params.threshold,  # Pass the global threshold
-            )
+            alerts = map_collection(averages, enhanced_alert, threshold)
 
             return alerts
-    ```
+        ```
 
-    - Metaprogramming
-    ```python
-    # Define resource using decorator
-    @resource
-    def temperature_monitor(threshold: float):
-        # Compute average temperatures
-        averages = map_collection(readings_collection, average_temperature)
+    The Meta API drastically reduces code. It merges parameter definition and resource logic, infers parameter models, and automatically handles dependencies (like `location_ref_collection` used within `enhanced_alert`), making the code more declarative.
 
-        # Generate enhanced alerts using both averages and location references
-        alerts = map_collection(averages, enhanced_alert, threshold)
+#### 3. **Resource Registration**:
+    - **Classic:** Requires explicit instantiation and registration with the service.
+        ```python
+        # Create and add resource
+        temperature_monitor = TemperatureMonitorResource(
+            readings_collection, location_ref_collection, service.compute_graph
+        )
+        service.add_resource("temperature_monitor", temperature_monitor)
+        ```
+        - **Metaprogramming:** Registration is automatic for functions decorated with `@resource`.
+        ```python
+        # Nothing needed
+        ```
 
-        return alerts
-    ```
+    Eliminates manual registration steps, reducing potential errors and simplifying setup. The framework discovers resources automatically.
 
-3. **Resource Registration**:
-    - Classic
-    ```python
-    # Create and add resource
-    temperature_monitor = TemperatureMonitorResource(
-        readings_collection, location_ref_collection, service.compute_graph
-    )
-    service.add_resource("temperature_monitor", temperature_monitor)
-    ```
-    - Metaprogramming
-    ```python
-    # Nothing needed
-    ```
+### Summary of Differences:
 
-### Key Differences
+| Feature             | Classic API                         | Metaprogramming API                       | Benefit of Meta API                       |
+| :------------------ | :---------------------------------- | :---------------------------------------- | :---------------------------------------- |
+| **Mapper Def.**     | Inherited Class                     | Decorated Function                        | Less boilerplate, focus on logic          |
+| **Resource Def.**   | Inherited Class + Param Class       | Decorated Function                        | Concise, integrated parameter definition  |
+| **Registration**    | Explicit `service.add_resource()`   | Automatic via `@resource`                 | Simpler setup, less error-prone           |
+| **Dependencies**    | Explicit (constructor/map args)     | Automatic Detection                       | Reduced boilerplate, more declarative     |
+| **Overall**         | Verbose, Explicit, OOP-standard     | Concise, Declarative, Less "ceremony"     | Improved Developer Experience             |
 
-1. **Class vs. Function Approach**:
-   - Classic API: Uses classes for mappers and resources
-   - Metaprogramming API: Uses decorated functions
-
-2. **Boilerplate Code**:
-   - Classic API: Requires more boilerplate (class definitions, constructors, etc.)
-   - Metaprogramming API: Minimal boilerplate, focusing on the core logic
-
-3. **Resource Registration**:
-   - Classic API: Explicit resource registration with `service.add_resource()`
-   - Metaprogramming API: Automatic registration of resources decorated with `@resource`
-
-4. **Dependency Management**:
-   - Classic API: Dependencies must be explicitly passed in constructors
-   - Metaprogramming API: Dependencies are automatically detected
-
-5. **Code Length**:
-   - Classic API: Typically more verbose
-   - Metaprogramming API: More concise, already about 20% less code in this simple example.
-
-The metaprogramming API delivers the same functionality as the classic API but in a more developer-friendly package that can significantly speed up development.
+The comparison clearly shows that the Metaprogramming API provides a more streamlined and developer-friendly interface by leveraging metaprogramming to handle boilerplate and automate common tasks like registration and dependency management.
