@@ -1,0 +1,59 @@
+---
+sidebar_position: 1
+---
+
+# Introduction to the Task Runner Framework
+
+At its core, the framework allows developers to define computational tasks using simple Python functions and execute them in a distributed manner. The system leverages metaprogramming to transform these simple function definitions into distributed tasks with minimal boilerplate code.
+
+:::tip
+The source code for the demo is available [here](https://github.com/CFSY/meta_task_runner).
+:::
+
+# Motivation
+
+To gain an appreciation of Python's metaprogramming capabilities, a simple distributed task execution framework was implemented to help distill and showcase some techiniques identified in the previous analysis. While this demo framework itself provides limited practical utility, its primary purpose is to showcase how Python's metaprogramming features can be leveraged to create intuitive APIs, domain-specific languages (DSLs), and flexible runtime behaviors.
+
+Consider this simple task definition:
+
+```python
+@task
+def add_numbers(a: int, b: int) -> int:
+    """Add two numbers together"""
+    return a + b
+```
+
+This seemingly simple code triggers a chain of metaprogramming operations:
+
+1. A new task class is created in place of the function
+2. The metadata of the function is preserved and stored in a task registry
+3. Type information is extracted for runtime validation
+4. Custom worker code is generated for distributed execution of tasks
+
+The diagram below provides a good visual representation of the whole flow.
+
+<img src={require('@site/static/img/flow.png').default} alt="Flow Diagram" height="800px"/>
+
+Upon startup, a web interface is provided, exposing the user defined functions for execution.
+
+<img src={require('@site/static/img/img.png').default} alt="Available Tasks"/>
+
+The tasks can be executed through the web interface. Task input parameters are automatically detected and exposed for input.
+
+There are currently two executors provided, the thread and docker executors.
+- Thread: spins up a new thread for execution
+- Docker: spins up a new docker container for execution
+
+<img src={require('@site/static/img/img_2.png').default} alt="Task Interface"/>
+
+In the case where the task is executed with the Docker executor, the following occurs:
+
+1. An execution request is sent from the web UI to the server
+2. The execution manager receives the request and code generation
+3. Custom worker code is generated, containing only code relevant to the task being executed
+4. Docker container orchestration configurations are generated and executed
+5. The task is executed on the worker container
+6. Meanwhile, the web UI automatically polls for the execution results and status
+7. Execution is completed and everything is cleaned up
+
+<img src={require('@site/static/img/architecture.png').default} alt="Architecture Diagram" height="800px"/>
